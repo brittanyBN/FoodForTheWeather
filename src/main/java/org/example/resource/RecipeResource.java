@@ -2,40 +2,42 @@ package org.example.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.example.model.WeatherResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-@Path("/weather")
+@Path("")
 @Produces(MediaType.APPLICATION_JSON)
-public class WeatherResource {
-
+public class RecipeResource {
     private static final Dotenv dotenv = Dotenv.load();
-    private static final String WEATHER_URL = "https://api.api-ninjas.com/v1/weather?city=";
     private static final String API_KEY = dotenv.get("API_KEY");
 
+    private static final String RECIPE_URL = "https://api.api-ninjas.com/v1/recipe?query=";
+
     private static final Logger LOG = LoggerFactory.getLogger(WeatherResource.class);
-    private final HttpClient httpClient;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpClient httpClient;
 
-
-    public WeatherResource() {
+    public RecipeResource() {
         this.httpClient = HttpClient.newHttpClient();
     }
 
     @GET
-    @Path("/forecast/{city}")
+    @Path("/recipes/{mealType}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getWeatherForecast(@PathParam("city") String city) throws IOException, InterruptedException {
-        URI uri = URI.create(WEATHER_URL + city);
+    public Response getRecipe(@PathParam("mealType") String mealType) throws IOException, InterruptedException {
+        URI uri = URI.create(RECIPE_URL + mealType);
         System.out.println(uri);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -47,11 +49,8 @@ public class WeatherResource {
 
         if (httpResponse.statusCode() == 200) {
             String responseBody = httpResponse.body();
-            WeatherResponse weatherResponse = objectMapper.readValue(responseBody, WeatherResponse.class);
-            int minTemp = weatherResponse.getMinTemp();
-            int maxTemp = weatherResponse.getMaxTemp();
 
-            return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". Lets find something enjoyable to eat in this weather..").build();
+            return Response.ok(responseBody).build();
         } else {
             LOG.error("Failed to fetch weather data. Status code: " + httpResponse.statusCode());
             return Response.serverError().build();
