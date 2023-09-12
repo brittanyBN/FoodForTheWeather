@@ -5,7 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.example.model.WeatherResponse;
+import org.example.model.Weather;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class WeatherResource {
     }
 
     @GET
-    @Path("/forecast/{city}")
+    @Path("/{city}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getWeatherForecast(@PathParam("city") String city) throws IOException, InterruptedException {
         URI uri = URI.create(WEATHER_URL + city);
@@ -47,9 +47,9 @@ public class WeatherResource {
 
         if (httpResponse.statusCode() == 200) {
             String responseBody = httpResponse.body();
-            WeatherResponse weatherResponse = objectMapper.readValue(responseBody, WeatherResponse.class);
-            int minTemp = weatherResponse.getMinTemp();
-            int maxTemp = weatherResponse.getMaxTemp();
+            Weather weather = objectMapper.readValue(responseBody, Weather.class);
+            int minTemp = weather.getMinTemp();
+            int maxTemp = weather.getMaxTemp();
 
             return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". Lets find something enjoyable to eat in this weather..").build();
         } else {

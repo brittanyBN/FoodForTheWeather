@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
-
 public class Main {
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     public static final URI BASE_URI = URI.create("http://0.0.0.0:8080");

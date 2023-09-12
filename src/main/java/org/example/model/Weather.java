@@ -2,15 +2,17 @@ package org.example.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class WeatherResponse {
+public class Weather {
     @JsonProperty("cloud_pct")
     private int cloudPercentage;
 
+    @JsonProperty("temp")
     private int temp;
 
     @JsonProperty("feels_like")
     private int feelsLike;
 
+    @JsonProperty("humidity")
     private int humidity;
 
     @JsonProperty("min_temp")
@@ -25,8 +27,10 @@ public class WeatherResponse {
     @JsonProperty("wind_degrees")
     private int windDegrees;
 
+    @JsonProperty("sunrise")
     private long sunrise;
 
+    @JsonProperty("sunset")
     private long sunset;
 
     public int getCloudPercentage() {
