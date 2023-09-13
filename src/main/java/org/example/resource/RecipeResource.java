@@ -10,7 +10,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.model.Recipe;
-import org.example.model.RecipeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,8 @@ public class RecipeResource {
 
             if (httpResponse.statusCode() == 200) {
                 String responseBody = httpResponse.body();
-                List<Recipe> recipes = objectMapper.readValue(responseBody, new TypeReference<List<Recipe>>() {});
+                List<Recipe> recipes = objectMapper.readValue(responseBody, new TypeReference<>() {
+                });
 
                 if (!recipes.isEmpty()) {
                     Random generator = new Random();

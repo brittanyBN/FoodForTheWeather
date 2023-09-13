@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.resource.RecipeResource;
+import org.example.resource.SuggestionResource;
 import org.example.resource.WeatherResource;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -18,6 +19,7 @@ public class Main {
         ResourceConfig config = new ResourceConfig();
         config.register(WeatherResource.class);
         config.register(RecipeResource.class);
+        config.register(SuggestionResource.class);
         HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config);
 
         try {
