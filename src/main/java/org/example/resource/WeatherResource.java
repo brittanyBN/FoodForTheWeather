@@ -35,26 +35,31 @@ public class WeatherResource {
     @Path("/{city}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getWeatherForecast(@PathParam("city") String city) throws IOException, InterruptedException {
-        URI uri = URI.create(WEATHER_URL + city);
-        System.out.println(uri);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .header("X-API-KEY", API_KEY)
-                .GET()
-                .build();
+        try {
+            URI uri = URI.create(WEATHER_URL + city);
+            System.out.println(uri);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("X-API-KEY", API_KEY)
+                    .GET()
+                    .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (httpResponse.statusCode() == 200) {
-            String responseBody = httpResponse.body();
-            Weather weather = objectMapper.readValue(responseBody, Weather.class);
-            int minTemp = weather.getMinTemp();
-            int maxTemp = weather.getMaxTemp();
+            if (httpResponse.statusCode() == 200) {
+                String responseBody = httpResponse.body();
+                Weather weather = objectMapper.readValue(responseBody, Weather.class);
+                int minTemp = weather.getMinTemp();
+                int maxTemp = weather.getMaxTemp();
 
-            return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". Lets find something enjoyable to eat in this weather..").build();
-        } else {
-            LOG.error("Failed to fetch weather data. Status code: " + httpResponse.statusCode());
-            return Response.serverError().build();
+                return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". Lets find something enjoyable to eat in this weather..").build();
+            } else {
+                LOG.error("Failed to fetch weather data. Status code: " + httpResponse.statusCode());
+                return Response.serverError().build();
+            }
+        } catch (IOException | InterruptedException e) {
+            LOG.error("Error while fetching weather data: " + e.getMessage(), e);
+            return Response.serverError().entity("Error while fetching weather data").build();
         }
     }
 

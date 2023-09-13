@@ -10,6 +10,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.model.Recipe;
+import org.example.model.RecipeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class RecipeResource {
 
     private static final String RECIPE_URL = "https://api.api-ninjas.com/v1/recipe?query=";
 
-    private static final Logger LOG = LoggerFactory.getLogger(WeatherResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RecipeResource.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient;
 
@@ -40,32 +41,41 @@ public class RecipeResource {
     @GET
     @Path("/{mealType}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRecipe(@PathParam("mealType") String mealType) throws IOException, InterruptedException {
-        URI uri = URI.create(RECIPE_URL + mealType);
-        System.out.println(uri);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
-                .header("X-API-KEY", API_KEY)
-                .GET()
-                .build();
+    public Response getRecipe(@PathParam("mealType") String mealType) {
+        try {
+            URI uri = URI.create(RECIPE_URL + mealType);
+            System.out.println(uri);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("X-API-KEY", API_KEY)
+                    .GET()
+                    .build();
 
-        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (httpResponse.statusCode() == 200) {
-            String responseBody = httpResponse.body();
-            List<Recipe> recipes = objectMapper.readValue(responseBody, new TypeReference<>() {
-            });
+            if (httpResponse.statusCode() == 200) {
+                String responseBody = httpResponse.body();
+                List<Recipe> recipes = objectMapper.readValue(responseBody, new TypeReference<List<Recipe>>() {});
 
-            Random generator = new Random();
-            int randomIndex = generator.nextInt(recipes.size());
-            Recipe randomRecipe = recipes.get(randomIndex);
-            String jsonRecipe = objectMapper.writeValueAsString(randomRecipe);
+                if (!recipes.isEmpty()) {
+                    Random generator = new Random();
+                    int randomIndex = generator.nextInt(recipes.size());
+                    Recipe randomRecipe = recipes.get(randomIndex);
+                    String jsonRecipe = objectMapper.writeValueAsString(randomRecipe);
 
-            return Response.ok(jsonRecipe).build();
-        } else {
-            LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
-            return Response.serverError().build();
+                    return Response.ok(jsonRecipe).build();
+                } else {
+                    LOG.warn("No recipes found for meal type: " + mealType);
+                    return Response.status(Response.Status.NOT_FOUND).entity("No recipes found for meal type: " + mealType).build();
+                }
+            } else {
+                LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
+                return Response.serverError().entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode()).build();
+            }
+
+        } catch (IOException | InterruptedException e) {
+            LOG.error("Error while fetching recipe data: " + e.getMessage(), e);
+            return Response.serverError().entity("Error while fetching recipe data").build();
         }
     }
-
 }
