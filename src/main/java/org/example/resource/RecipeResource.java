@@ -1,7 +1,6 @@
 package org.example.resource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -10,72 +9,70 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.model.Recipe;
+import org.example.util.HttpClientSingleton;
+import org.example.util.ObjectMapperSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Random;
 
 @Path("/recipes")
 @Produces(MediaType.APPLICATION_JSON)
 public class RecipeResource {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String API_KEY = dotenv.get("API_KEY");
-
     private static final String RECIPE_URL = dotenv.get("RECIPE_URL");
-
     private static final Logger LOG = LoggerFactory.getLogger(RecipeResource.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient;
 
-    public RecipeResource() {
-        this.httpClient = HttpClient.newHttpClient();
+    public HttpRequest getRecipeUrl(String mealType) {
+        URI uri = URI.create(RECIPE_URL + mealType);
+        System.out.println(uri);
+
+        return HttpRequest.newBuilder()
+                .uri(uri)
+                .header("X-API-KEY", API_KEY)
+                .GET()
+                .build();
     }
 
     @GET
-    @Path("/{mealType}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("random/{mealType}")
     public Response getRecipe(@PathParam("mealType") String mealType) {
         try {
-            URI uri = URI.create(RECIPE_URL + mealType);
-            System.out.println(uri);
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .header("X-API-KEY", API_KEY)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpRequest request = getRecipeUrl(mealType);
+            HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (httpResponse.statusCode() == 200) {
                 String responseBody = httpResponse.body();
-                List<Recipe> recipes = objectMapper.readValue(responseBody, new TypeReference<>() {
-                });
+                List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {});
+                List<Recipe> result = recipes.stream().limit(5).toList();
 
-                if (!recipes.isEmpty()) {
-                    Random generator = new Random();
-                    int randomIndex = generator.nextInt(recipes.size());
-                    Recipe randomRecipe = recipes.get(randomIndex);
-                    String jsonRecipe = objectMapper.writeValueAsString(randomRecipe);
-
-                    return Response.ok(jsonRecipe).build();
-                } else {
-                    LOG.warn("No recipes found for meal type: " + mealType);
-                    return Response.status(Response.Status.NOT_FOUND).entity("No recipes found for meal type: " + mealType).build();
+                StringBuilder responseMessage = new StringBuilder("Here are five random " + mealType + " suggestions:\n\n");
+                for (int i = 0; i < result.size(); i++) {
+                    responseMessage.append("Recipe ").append(i + 1).append(":\n\n")
+                            .append("Name: ").append(result.get(i).getTitle()).append("\n")
+                            .append("Ingredients: ").append(result.get(i).getIngredients()).append("\n")
+                            .append("Instructions: ").append(result.get(i).getInstructions()).append("\n")
+                            .append("\n");
                 }
+
+                return Response.ok(responseMessage.toString()).build();
             } else {
                 LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
-                return Response.serverError().entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode()).build();
+                return Response.status(httpResponse.statusCode())
+                        .entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode())
+                        .build();
             }
 
         } catch (IOException | InterruptedException e) {
             LOG.error("Error while fetching recipe data: " + e.getMessage(), e);
-            return Response.serverError().entity("Error while fetching recipe data").build();
+            return Response.serverError()
+                    .entity("Error while fetching recipe data: " + e.getMessage())
+                    .build();
         }
     }
 }
