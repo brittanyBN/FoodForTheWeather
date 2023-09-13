@@ -19,7 +19,7 @@ import java.net.http.HttpResponse;
 public class WeatherResource {
 
     private static final Dotenv dotenv = Dotenv.load();
-    private static final String WEATHER_URL = "https://api.api-ninjas.com/v1/weather?city=";
+    private static final String WEATHER_URL = dotenv.get("WEATHER_URL");
     private static final String API_KEY = dotenv.get("API_KEY");
 
     private static final Logger LOG = LoggerFactory.getLogger(WeatherResource.class);

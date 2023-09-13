@@ -28,8 +28,8 @@ public class SuggestionResource {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String API_KEY = dotenv.get("API_KEY");
 
-    private static final String RECIPE_URL = "https://api.api-ninjas.com/v1/recipe?query=";
-    private static final String WEATHER_URL = "https://api.api-ninjas.com/v1/weather?city=";
+    private static final String RECIPE_URL = dotenv.get("RECIPE_URL");
+    private static final String WEATHER_URL = dotenv.get("WEATHER_URL");
 
     private static final Logger LOG = LoggerFactory.getLogger(RecipeResource.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -40,18 +40,10 @@ public class SuggestionResource {
     }
 
     @GET
-    @Path("/{city}/{mealType}")
+    @Path("/{city}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getRecipe(@PathParam("mealType") String mealType, @PathParam("city") String city) {
+    public Response getRecipe(@PathParam("city") String city) {
         try {
-            URI recipeUri = URI.create(RECIPE_URL + mealType);
-            System.out.println(recipeUri);
-            HttpRequest recipeRequest = HttpRequest.newBuilder()
-                    .uri(recipeUri)
-                    .header("X-API-KEY", API_KEY)
-                    .GET()
-                    .build();
-
             URI weatherUri = URI.create(WEATHER_URL + city);
             System.out.println(weatherUri);
             HttpRequest weatherRequest = HttpRequest.newBuilder()
@@ -60,8 +52,23 @@ public class SuggestionResource {
                     .GET()
                     .build();
 
-            HttpResponse<String> httpRecipeResponse = httpClient.send(recipeRequest, HttpResponse.BodyHandlers.ofString());
             HttpResponse<String> httpWeatherResponse = httpClient.send(weatherRequest, HttpResponse.BodyHandlers.ofString());
+
+            String responseBody = httpWeatherResponse.body();
+            Weather weather = objectMapper.readValue(responseBody, Weather.class);
+            int minTemp = weather.getMinTemp();
+            int maxTemp = weather.getMaxTemp();
+            FoodForWeather foodForWeather = new FoodForWeather();
+            String mealType = foodForWeather.getMealType(minTemp, maxTemp);
+            URI recipeUri = URI.create(RECIPE_URL + mealType);
+            System.out.println(recipeUri);
+            HttpRequest recipeRequest = HttpRequest.newBuilder()
+                    .uri(recipeUri)
+                    .header("X-API-KEY", API_KEY)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> httpRecipeResponse = httpClient.send(recipeRequest, HttpResponse.BodyHandlers.ofString());
 
             if (httpRecipeResponse.statusCode() == 200 && httpWeatherResponse.statusCode() == 200) {
                 String recipeResponseBody = httpRecipeResponse.body();
@@ -72,15 +79,10 @@ public class SuggestionResource {
                     Random generator = new Random();
                     int randomIndex = generator.nextInt(recipes.size());
                     Recipe randomRecipe = recipes.get(randomIndex);
-                    String jsonRecipe = objectMapper.writeValueAsString(randomRecipe);
+//                    String jsonRecipe = objectMapper.writeValueAsString(randomRecipe);
                     String meal = randomRecipe.getTitle();
                     String mealIngredients = randomRecipe.getIngredients();
                     String mealInstructions = randomRecipe.getInstructions();
-
-                    String responseBody = httpWeatherResponse.body();
-                    Weather weather = objectMapper.readValue(responseBody, Weather.class);
-                    int minTemp = weather.getMinTemp();
-                    int maxTemp = weather.getMaxTemp();
 
                     return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". I suggest you eat: \b" + meal + "\n\n" + "Ingredients: \n\n" + mealIngredients + "\n\n" + "Cooking Instructions: \n\n" + mealInstructions).build();                } else {
                     LOG.warn("No recipes found for meal type: " + mealType);

@@ -27,7 +27,7 @@ public class RecipeResource {
     private static final Dotenv dotenv = Dotenv.load();
     private static final String API_KEY = dotenv.get("API_KEY");
 
-    private static final String RECIPE_URL = "https://api.api-ninjas.com/v1/recipe?query=";
+    private static final String RECIPE_URL = dotenv.get("RECIPE_URL");
 
     private static final Logger LOG = LoggerFactory.getLogger(RecipeResource.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
