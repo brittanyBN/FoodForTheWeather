@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Objects;
 
 @Path("/recipes")
 @Produces(MediaType.APPLICATION_JSON)
@@ -45,12 +46,13 @@ public class RecipeResource {
         try {
             HttpRequest request = getRecipeUrl(mealType);
             HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            int limit = 5;
 
             if (httpResponse.statusCode() == 200) {
                 String responseBody = httpResponse.body();
                 List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
                 });
-                List<Recipe> result = recipes.stream().limit(5).toList();
+                List<Recipe> result = recipes.stream().limit(limit).toList();
 
                 StringBuilder responseMessage = new StringBuilder("Here are five random " + mealType + " suggestions:\n\n");
                 for (int i = 0; i < result.size(); i++) {
@@ -76,4 +78,28 @@ public class RecipeResource {
                     .build();
         }
     }
+
+    @GET
+    @Path("/{mealType}/{allergy}")
+    public Response getSortedRecipes(@PathParam("mealType") String mealType, @PathParam("allergy") String allergy) throws IOException, InterruptedException {
+        HttpRequest request = getRecipeUrl(mealType);
+        HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (httpResponse.statusCode() == 200) {
+            String responseBody = httpResponse.body();
+            List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
+            });
+            List<Recipe> result = recipes.stream()
+                    .filter(recipe -> !recipe.getIngredients().toLowerCase().contains(allergy))
+                    .toList();
+
+            return Response.ok(result).build();
+        } else {
+            LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
+            return Response.status(httpResponse.statusCode())
+                    .entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode())
+                    .build();
+        }
+    }
+
 }
