@@ -9,6 +9,7 @@ import org.example.util.HttpClientSingleton;
 import org.example.util.ObjectMapperSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;

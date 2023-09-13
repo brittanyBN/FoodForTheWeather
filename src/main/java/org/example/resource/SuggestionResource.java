@@ -1,7 +1,6 @@
 package org.example.resource;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -10,13 +9,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.example.model.Recipe;
 import org.example.model.Weather;
+import org.example.util.FoodForWeather;
 import org.example.util.HttpClientSingleton;
 import org.example.util.ObjectMapperSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
@@ -25,10 +24,6 @@ import java.util.Random;
 @Path("/suggestions")
 @Produces(MediaType.APPLICATION_JSON)
 public class SuggestionResource {
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final String API_KEY = dotenv.get("API_KEY");
-    private static final String RECIPE_URL = dotenv.get("RECIPE_URL");
-    private static final String WEATHER_URL = dotenv.get("WEATHER_URL");
     private static final Logger LOG = LoggerFactory.getLogger(RecipeResource.class);
 
     @GET

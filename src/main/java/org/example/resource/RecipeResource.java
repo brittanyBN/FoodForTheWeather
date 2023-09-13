@@ -48,7 +48,8 @@ public class RecipeResource {
 
             if (httpResponse.statusCode() == 200) {
                 String responseBody = httpResponse.body();
-                List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {});
+                List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
+                });
                 List<Recipe> result = recipes.stream().limit(5).toList();
 
                 StringBuilder responseMessage = new StringBuilder("Here are five random " + mealType + " suggestions:\n\n");
