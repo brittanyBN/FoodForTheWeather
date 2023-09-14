@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Objects;
 
 @Path("/recipes")
 @Produces(MediaType.APPLICATION_JSON)
