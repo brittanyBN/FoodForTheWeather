@@ -59,5 +59,4 @@ public class WeatherResource {
             return Response.serverError().entity("Error while fetching weather data").build();
         }
     }
-
 }
