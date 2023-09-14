@@ -16,6 +16,9 @@ Create Docker image: docker build -t food-for-weather .
 Run Docker container: docker run -it --rm -p 8080:8080 food-for-weather:latest
 Test endpoint using command line tool: curl http://localhost:8080/weather/oslo
 
+## Kubernetes
+Currently deploying to kubernetes
+
 ## Endpoints
 - /suggestions/{city}: This endpoint retrieves the weather data for the given city, and suggests a meal based on the average temperature.
 - /weather/{city}: This endpoint retrieves the weather data for the given city.
