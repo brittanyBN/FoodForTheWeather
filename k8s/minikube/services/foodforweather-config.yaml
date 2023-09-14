@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foodforweather-config
+  namespace: development
+data:
+  API_KEY: dG95GzEc5daN2H5YqFPXZQ==UTEHVf6xSwhbaqQ8
+  WEATHER_URL: https://api.api-ninjas.com/v1/weather?city=
+  RECIPE_URL: https://api.api-ninjas.com/v1/recipe?query=

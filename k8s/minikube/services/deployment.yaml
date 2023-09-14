@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foodforweather-deployment
+  namespace: development
+  labels:
+    app: foodforweather
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: foodforweather
+      labels:
+        app: foodforweather
+    spec:
+      containers:
+        - name: foodforweather-container
+          image: brittanybn/food-for-weather:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: foodforweather-config
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: foodforweather
