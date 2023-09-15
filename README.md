@@ -9,15 +9,20 @@ the Weather API to retrieve weather data and the Recipe API from API Ninjas to p
 ./gradlew run
 
 ## Run in Docker
-Create jar file by running jar task: ./gradlew jar
-Test jar file: java -jar build/libs/FoodForTheWeather-1.0-SNAPSHOT.jar
-Create Dockerfile in root of project
-Create Docker image: docker build -t food-for-weather .
-Run Docker container: docker run -it --rm -p 8080:8080 food-for-weather:latest
-Test endpoint using command line tool: curl http://localhost:8080/weather/oslo
+- Create jar file by running jar task: ./gradlew jar
+- Test jar file: java -jar build/libs/FoodForTheWeather-1.0-SNAPSHOT.jar
+- Create Dockerfile in root of project
+- Create Docker image: docker build -t food-for-weather .
+- Run Docker container: docker run -it --rm -p 8080:8080 food-for-weather:latest
+- Test endpoint using command line tool: curl http://localhost:8080/weather/oslo
 
 ## Kubernetes
-Currently deploying to kubernetes
+Currently deploying to kubernetes (minikube):
+- Check that docker is running: docker
+- Start minikube: minikube start
+- Explore cluster: kubectl cluster-info
+- Create necessary yaml files in project then run: kubectl apply -f namespace.yaml
+- View namespaces added: kubectl get namespaces
 
 ## Endpoints
 - /suggestions/{city}: This endpoint retrieves the weather data for the given city, and suggests a meal based on the average temperature.
