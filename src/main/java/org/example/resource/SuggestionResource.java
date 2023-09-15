@@ -61,7 +61,10 @@ public class SuggestionResource {
                     String mealIngredients = randomRecipe.getIngredients();
                     String mealInstructions = randomRecipe.getInstructions();
 
-                    return Response.ok("You're currently in " + city + "! The low for today is " + minTemp + " and the high for today is " + maxTemp + ". I suggest you eat: \b" + meal + "\n\n" + "Ingredients: \n\n" + mealIngredients + "\n\n" + "Cooking Instructions: \n\n" + mealInstructions).build();
+                    String responseMessage = String.format("You're currently in %s! The low for today is %s and the high for today is %s. I suggest you eat: \b%s\n\nIngredients:\n\n%s\n\nCooking Instructions:\n\n%s",
+                            city, minTemp, maxTemp, meal, mealIngredients, mealInstructions);
+
+                    return Response.ok(responseMessage).build();
                 } else {
                     LOG.warn("No recipes found for meal type: " + mealType);
                     return Response.status(Response.Status.NOT_FOUND).entity("No recipes found for meal type: " + mealType).build();

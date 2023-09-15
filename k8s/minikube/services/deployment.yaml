@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: foodforweather-container
-          image: brittanybn/food-for-weather:latest
+          image: brittanybn/food-for-weather:updated
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

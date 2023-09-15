@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/recipes")
@@ -49,8 +51,7 @@ public class RecipeResource {
 
             if (httpResponse.statusCode() == 200) {
                 String responseBody = httpResponse.body();
-                List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
-                });
+                List<Recipe> recipes = Collections.singletonList(ObjectMapperSingleton.mapper.readValue(responseBody, Recipe.class));
                 List<Recipe> result = recipes.stream().limit(limit).toList();
 
                 StringBuilder responseMessage = new StringBuilder("Here are five random " + mealType + " suggestions:\n\n");
@@ -80,25 +81,33 @@ public class RecipeResource {
 
     @GET
     @Path("/{mealType}/{allergy}")
-    public Response getSortedRecipes(@PathParam("mealType") String mealType, @PathParam("allergy") String allergy) throws IOException, InterruptedException {
-        HttpRequest request = getRecipeUrl(mealType);
-        HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    public Response getSortedRecipes(@PathParam("mealType") String mealType, @PathParam("allergy") String allergy) {
+        try {
+            HttpRequest request = getRecipeUrl(mealType);
+            HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (httpResponse.statusCode() == 200) {
-            String responseBody = httpResponse.body();
-            List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
-            });
-            List<Recipe> result = recipes.stream()
-                    .filter(recipe -> !recipe.getIngredients().toLowerCase().contains(allergy))
-                    .toList();
+            if (httpResponse.statusCode() == 200) {
+                String responseBody = httpResponse.body();
+                List<Recipe> recipes = ObjectMapperSingleton.mapper.readValue(responseBody, new TypeReference<>() {
+                });
+                List<Recipe> result = recipes.stream()
+                        .filter(recipe -> !recipe.getIngredients().toLowerCase().contains(allergy))
+                        .toList();
 
-            return Response.ok(result).build();
-        } else {
-            LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
-            return Response.status(httpResponse.statusCode())
-                    .entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode())
+                return Response.ok(result).build();
+            } else {
+                LOG.error("Failed to fetch recipe data. Status code: " + httpResponse.statusCode());
+                return Response.status(httpResponse.statusCode())
+                        .entity("Failed to fetch recipe data. Status code: " + httpResponse.statusCode())
+                        .build();
+            }
+        } catch (IOException | InterruptedException e) {
+            LOG.error("An error occurred while processing the request: " + e.getMessage(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("An error occurred while processing the request: " + e.getMessage())
                     .build();
         }
     }
+
 
 }

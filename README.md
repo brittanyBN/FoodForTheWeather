@@ -27,4 +27,3 @@ Currently deploying to kubernetes
 
 ## Todos
 - Check that the same recipe isn't being fetched twice in a row
-- Fix tests

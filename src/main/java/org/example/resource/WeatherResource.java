@@ -37,7 +37,7 @@ public class WeatherResource {
     @GET
     @Path("/{city}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getWeatherForecast(@PathParam("city") String city) throws IOException, InterruptedException {
+    public Response getWeatherForecast(@PathParam("city") String city) {
         try {
             HttpRequest request = getWeatherUrl(city);
             HttpResponse<String> httpResponse = HttpClientSingleton.httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -48,8 +48,9 @@ public class WeatherResource {
                 int currentTemp = weather.getTemp();
                 int minTemp = weather.getMinTemp();
                 int maxTemp = weather.getMaxTemp();
+                String responseMessage = String.format("You're currently in %s! The temperature is currently %s. The low for today is %s and the high for today is %s.", city, currentTemp, minTemp, maxTemp);
 
-                return Response.ok("You're currently in " + city + "! The temperature is currently " + currentTemp + ". The low for today is " + minTemp + " and the high for today is " + maxTemp + ".").build();
+                return Response.ok(responseMessage).build();
             } else {
                 LOG.error("Failed to fetch weather data. Status code: " + httpResponse.statusCode());
                 return Response.serverError().build();
