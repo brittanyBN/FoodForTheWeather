@@ -17,12 +17,20 @@ the Weather API to retrieve weather data and the Recipe API from API Ninjas to p
 - Test endpoint using command line tool: curl http://localhost:8080/weather/oslo
 
 ## Kubernetes
-Currently deploying to kubernetes (minikube):
+To deploy to kubernetes (minikube):
 - Check that docker is running: docker
 - Start minikube: minikube start
 - Explore cluster: kubectl cluster-info
-- Create necessary yaml files in project then run: kubectl apply -f namespace.yaml
+- Create necessary yaml manifests in project then run: kubectl apply -f development.yaml
 - View namespaces added: kubectl get namespaces
+- View pods: kubectl get pods -n development
+- Check pod health by viewing its event logs: kubectl describe pod podname -n development
+- If you don't want the application exposed to the Internet, use a BusyBox. Otherwise:
+- Create service.yaml manifest
+- In terminal shell: minikube tunnel + password
+- In another shell window: kubectl apply -f service.yaml
+- kubectl get services -n development
+- Copy external IP address and test in web browser (+ endpoints)
 
 ## Endpoints
 - /suggestions/{city}: This endpoint retrieves the weather data for the given city, and suggests a meal based on the average temperature.
